@@ -188,7 +188,13 @@ For route `POST /approval`:
 5. Verify final status using `GET /request/{requestId}`.
 
  <img width="1554" height="784" alt="image" src="https://github.com/user-attachments/assets/10ba0001-cfce-4c68-8342-f219241eb49b" />
+
   
+  <img width="886" height="573" alt="image" src="https://github.com/user-attachments/assets/8edc1321-e4fb-42ee-b8c8-a98380448d2b" />
+
+  <img width="884" height="573" alt="image" src="https://github.com/user-attachments/assets/4b5ba1e0-f4a0-4670-89c3-97c43e989d9d" />
+
+
 
 ### Common UI Issues
 - **Error: Failed to fetch**: Usually CORS or wrong callback URL path.
