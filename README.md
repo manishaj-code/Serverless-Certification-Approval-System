@@ -141,3 +141,56 @@ If you receive a `{"error": "Task Timed Out"}` response when approving:
 - **Fix**: 
     1. Ensure your State Machine is **Standard** type (default for long-running processes).
     2. Submit a new request and approve it promptly.
+
+## Approval UI (HTML) Setup
+
+This project includes a simple manager UI file: [approval-ui.html](approval-ui.html). It lets you approve or reject without running curl commands manually.
+
+### 1) Host the HTML in S3 Static Website
+1. Create or open your S3 bucket for static hosting.
+2. Enable **Static website hosting**.
+3. Upload `approval-ui.html` as `index.html`.
+4. Make objects publicly readable (for demo only).
+5. Open the website endpoint in browser.
+
+### 2) Configure API Endpoint in HTML
+Update this line in `approval-ui.html`:
+
+```js
+const DEFAULT_CALLBACK_API = "https://mql8w7e6h1.execute-api.us-east-1.amazonaws.com/approval";
+```
+
+Use your real API URL. If your API uses a stage path, use `/prod/approval` (or your stage name).
+
+### 3) NotifyManagerFunction Environment Variable
+In Lambda `NotifyManagerFunction`, set:
+- `APPROVAL_UI_BASE_URL` = your S3 website URL (for example `http://certificationapprovalworkflow.s3-website-us-east-1.amazonaws.com/index.html`)
+
+Then CloudWatch logs print a one-click approval link with:
+- `taskToken`
+- `requestId`
+- `name`
+- `course`
+- `cost`
+
+### 4) API Gateway CORS (Required for Browser Button)
+For route `POST /approval`:
+- Allow origins: `*` (or your S3 website origin)
+- Allow methods: `POST, OPTIONS`
+- Allow headers: `Content-Type`
+- Deploy API after changes
+
+### 5) Test Flow with UI
+1. Submit request using `POST /request`.
+2. Open CloudWatch logs for `NotifyManagerFunction`.
+3. Open the generated approval URL.
+4. Click **Approve** or **Reject**.
+5. Verify final status using `GET /request/{requestId}`.
+
+ <img width="1554" height="784" alt="image" src="https://github.com/user-attachments/assets/10ba0001-cfce-4c68-8342-f219241eb49b" />
+  
+
+### Common UI Issues
+- **Error: Failed to fetch**: Usually CORS or wrong callback URL path.
+- **403 Forbidden on S3**: Static website/public read not configured.
+- **Missing API URL**: `DEFAULT_CALLBACK_API` is still empty or placeholder.
