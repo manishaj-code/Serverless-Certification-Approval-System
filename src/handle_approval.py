@@ -4,10 +4,23 @@ import os
 
 sfn_client = boto3.client('stepfunctions')
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'OPTIONS,POST'
+}
+
 def lambda_handler(event, context):
     print("Received event:", json.dumps(event))
 
     try:
+        if event.get('httpMethod') == 'OPTIONS':
+            return {
+                'statusCode': 200,
+                'headers': CORS_HEADERS,
+                'body': json.dumps({'message': 'ok'})
+            }
+
         if 'body' in event:
             body = json.loads(event['body'])
         else:
@@ -19,14 +32,14 @@ def lambda_handler(event, context):
         if not task_token or not decision:
             return {
                 'statusCode': 400,
-                'headers': { 'Access-Control-Allow-Origin': '*' },
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'Missing taskToken or decision'})
             }
         
         if decision not in ['APPROVED', 'REJECTED']:
              return {
                 'statusCode': 400,
-                'headers': { 'Access-Control-Allow-Origin': '*' },
+                'headers': CORS_HEADERS,
                 'body': json.dumps({'error': 'decision must be APPROVED or REJECTED'})
             }
 
@@ -44,32 +57,32 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
-            'headers': { 'Access-Control-Allow-Origin': '*' },
+            'headers': CORS_HEADERS,
             'body': json.dumps({'message': f'Request {decision} successfully'})
         }
 
     except sfn_client.exceptions.TaskDoesNotExist:
          return {
             'statusCode': 404,
-            'headers': { 'Access-Control-Allow-Origin': '*' },
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': 'Task Token not found or expired'})
         }
     except sfn_client.exceptions.InvalidToken:
          return {
             'statusCode': 400,
-            'headers': { 'Access-Control-Allow-Origin': '*' },
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': 'Invalid Task Token'})
         }
     except sfn_client.exceptions.TaskTimedOut:
          return {
             'statusCode': 410,
-            'headers': { 'Access-Control-Allow-Origin': '*' },
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': 'Task Timed Out'})
         }
     except Exception as e:
         print(f"Error: {str(e)}")
         return {
             'statusCode': 500,
-            'headers': { 'Access-Control-Allow-Origin': '*' },
+            'headers': CORS_HEADERS,
             'body': json.dumps({'error': str(e)})
         }
